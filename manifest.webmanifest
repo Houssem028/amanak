@@ -1,0 +1,12 @@
+{
+  "name": "أمانك — رحلة آمنة",
+  "short_name": "أمانك",
+  "description": "نموذج أولي لتطبيق أمانك لمشاركة الرحلات والموقع.",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#081a33",
+  "theme_color": "#081a33",
+  "icons": [{"src":"assets/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+}

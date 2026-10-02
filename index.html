@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#081a33">
+  <meta name="description" content="أمانك — نموذج أولي لتطبيق الرحلة الآمنة ومشاركة الموقع.">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <title>أمانك — رحلة آمنة</title>
+  <style>
+    :root{--navy:#081a33;--navy2:#0e2a4d;--red:#ef233c;--blue:#1d8cf8;--green:#22c55e;--bg:#f4f7fb;--text:#10233f;--muted:#6b7a90;--card:#fff;--border:#e4eaf2;}
+    *{box-sizing:border-box} body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Tahoma,Arial,sans-serif;background:var(--bg);color:var(--text)}
+    button,input{font:inherit} button{cursor:pointer;border:0}.app{max-width:520px;margin:auto;min-height:100vh;background:var(--bg);padding-bottom:28px}
+    header{background:linear-gradient(145deg,var(--navy),#123d6b);color:#fff;padding:22px 18px 24px;border-radius:0 0 28px 28px;box-shadow:0 8px 30px #081a3325}
+    .brand{display:flex;align-items:center;gap:10px}.brand img{width:46px;height:46px}.brand h1{font-size:25px;margin:0}.brand p{margin:2px 0 0;color:#d8e7f8;font-size:12px}
+    .status{margin-top:18px;display:flex;justify-content:space-between;align-items:center;background:#ffffff12;border:1px solid #ffffff20;padding:10px 12px;border-radius:14px;font-size:13px}.dot{width:9px;height:9px;border-radius:50%;display:inline-block;background:#94a3b8;margin-left:6px}.dot.online{background:#22c55e}.dot.offline{background:#f59e0b}
+    main{padding:16px}.card{background:var(--card);border:1px solid var(--border);border-radius:22px;padding:16px;margin-bottom:14px;box-shadow:0 5px 20px #0b25400a}.hero h2{margin:0 0 6px;font-size:22px}.hero p{margin:0;color:var(--muted);font-size:14px;line-height:1.6}
+    .primary{width:100%;background:linear-gradient(135deg,var(--red),#ff4b5f);color:#fff;padding:16px;border-radius:16px;font-weight:800;font-size:17px;margin-top:15px;box-shadow:0 8px 20px #ef233c35}.primary:disabled{opacity:.55}.secondary{background:#edf4fb;color:var(--navy);padding:12px 14px;border-radius:13px;font-weight:700}.danger{background:#fff0f1;color:#d71931;padding:12px 14px;border-radius:13px;font-weight:800}.success{background:#eafaf0;color:#12833a;padding:12px 14px;border-radius:13px;font-weight:800}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.mini{padding:13px;border:1px solid var(--border);border-radius:16px;background:#fbfdff}.mini strong{display:block;font-size:14px}.mini span{color:var(--muted);font-size:12px}
+    label{font-size:13px;font-weight:800;display:block;margin:12px 0 6px}input{width:100%;padding:13px;border:1px solid var(--border);border-radius:13px;background:#fff;outline:none}input:focus{border-color:var(--blue);box-shadow:0 0 0 3px #1d8cf815}
+    #map{height:330px;border-radius:18px;overflow:hidden;margin-top:12px;background:#dce9f5}.tripbar{display:flex;justify-content:space-between;gap:8px;align-items:center}.pill{padding:7px 10px;border-radius:999px;background:#eafaf0;color:#13843b;font-size:12px;font-weight:800}.coords{font-size:12px;color:var(--muted);direction:ltr;text-align:right;margin-top:8px}
+    .sos{height:74px;border-radius:20px;background:#151b26;color:#fff;display:flex;align-items:center;justify-content:center;gap:12px;font-size:20px;font-weight:900;width:100%;box-shadow:0 8px 20px #0002}.sos b{color:#ff5265}.hidden{display:none!important}.notice{padding:12px;border-radius:14px;background:#fff7e6;color:#8a5b00;font-size:13px;line-height:1.55}.footer{text-align:center;color:#7b8797;font-size:11px;padding:10px 20px;line-height:1.6}
+    @media(min-width:700px){body{padding:24px}.app{border-radius:28px;box-shadow:0 20px 60px #0b25401a;overflow:hidden}}
+  </style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="brand"><img src="assets/icon.svg" alt="أمانك"><div><h1>أمانك</h1><p>وين ما تمشي... حدّ معاك.</p></div></div>
+    <div class="status"><span><span id="netDot" class="dot"></span><span id="netText">جارٍ التحقق من الاتصال...</span></span><span id="gpsText">GPS غير مفعّل</span></div>
+  </header>
+  <main>
+    <section id="home" class="card hero">
+      <h2>رحلة آمنة تبدأ هنا 🛡️</h2>
+      <p>شارك موقعك مع شخص تثق به أثناء العودة من العمل، التاكسي أو أي رحلة.</p>
+      <label for="trusted">الشخص الموثوق</label>
+      <input id="trusted" type="text" placeholder="مثال: أمي — 20 000 000">
+      <button id="startBtn" class="primary">🟢 ابدأ رحلة</button>
+    </section>
+
+    <section id="trip" class="card hidden">
+      <div class="tripbar"><strong>رحلة نشطة</strong><span class="pill">● مشاركة الموقع</span></div>
+      <div id="map"></div>
+      <div class="grid" style="margin-top:12px">
+        <div class="mini"><strong>📍 آخر موقع</strong><span id="coords">بانتظار GPS...</span></div>
+        <div class="mini"><strong>🕐 آخر تحديث</strong><span id="updated">—</span></div>
+      </div>
+      <button id="shareBtn" class="secondary" style="width:100%;margin-top:10px">🔗 مشاركة الرحلة</button>
+      <button id="arriveBtn" class="success" style="width:100%;margin-top:10px">✅ وصلت بأمان</button>
+    </section>
+
+    <section id="sosCard" class="card hidden">
+      <button id="sosBtn" class="sos">🚨 <b>SOS</b> — أحتاج مساعدة</button>
+      <p class="notice" style="margin:10px 0 0">النموذج الحالي تجريبي: زر SOS يعرض تأكيدًا فقط. لن يتم الاتصال بالطوارئ تلقائيًا في هذه النسخة.</p>
+    </section>
+
+    <section class="card">
+      <h3 style="margin:0 0 12px">حالة الأمان</h3>
+      <div class="grid">
+        <div class="mini"><strong>📡 الاتصال</strong><span id="connectionState">—</span></div>
+        <div class="mini"><strong>📍 GPS</strong><span id="gpsState">غير نشط</span></div>
+        <div class="mini"><strong>👥 الموثوق</strong><span id="trustedState">لم يُحدد</span></div>
+        <div class="mini"><strong>🔐 وضع الخصوصية</strong><span>مشاركة بإذن المستخدم</span></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h3 style="margin:0 0 8px">⚠️ عند انقطاع الإنترنت</h3>
+      <p style="margin:0;color:var(--muted);font-size:13px;line-height:1.6">يحتفظ المتصفح بآخر موقع معروف محليًا. عند عودة الاتصال يمكن للنسخة المتصلة بالخادم إرسال تحديث جديد. في هذه النسخة لا يوجد خادم حقيقي بعد.</p>
+    </section>
+  </main>
+  <div class="footer">أمانك — نموذج أولي مجاني (Beta) • لا تعتمد على هذه النسخة وحدها في حالات الطوارئ.</div>
+</div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const $=id=>document.getElementById(id);
+let map=null, marker=null, watchId=null, active=false, lastPos=null;
+function updateNetwork(){const online=navigator.onLine;$('netDot').className='dot '+(online?'online':'offline');$('netText').textContent=online?'متصل بالإنترنت':'لا يوجد اتصال';$('connectionState').textContent=online?'متصل':'غير متصل';}
+function formatTime(){return new Date().toLocaleTimeString('ar-TN',{hour:'2-digit',minute:'2-digit',second:'2-digit'});}
+function setGPSStatus(text){$('gpsText').textContent=text;$('gpsState').textContent=text;}
+function saveLast(pos){lastPos={lat:pos.coords.latitude,lng:pos.coords.longitude,time:Date.now()};localStorage.setItem('amankLastLocation',JSON.stringify(lastPos));}
+function showMap(pos){const lat=pos.coords.latitude,lng=pos.coords.longitude;if(!map){map=L.map('map',{zoomControl:true}).setView([lat,lng],16);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(map);}else{map.setView([lat,lng],16);}if(!marker){marker=L.marker([lat,lng]).addTo(map).bindPopup('📍 موقعك الحالي').openPopup();}else marker.setLatLng([lat,lng]);}
+function onPosition(pos){saveLast(pos);showMap(pos);const lat=pos.coords.latitude.toFixed(5),lng=pos.coords.longitude.toFixed(5);$('coords').textContent=lat+', '+lng;$('updated').textContent=formatTime();setGPSStatus('GPS يعمل');}
+function onGeoError(err){setGPSStatus(err.code===1?'تم رفض صلاحية GPS':'تعذر الحصول على GPS');const saved=localStorage.getItem('amankLastLocation');if(saved){const p=JSON.parse(saved);$('coords').textContent=p.lat.toFixed(5)+', '+p.lng.toFixed(5);$('updated').textContent='آخر موقع محفوظ';}}
+function startTrip(){const trusted=$('trusted').value.trim();if(!trusted){alert('اكتب اسم أو رقم الشخص الموثوق أولًا.');return;}if(!navigator.geolocation){alert('هذا المتصفح لا يدعم GPS.');return;}active=true;$('home').classList.add('hidden');$('trip').classList.remove('hidden');$('sosCard').classList.remove('hidden');$('trustedState').textContent=trusted;setGPSStatus('جارٍ تشغيل GPS...');watchId=navigator.geolocation.watchPosition(onPosition,onGeoError,{enableHighAccuracy:true,maximumAge:5000,timeout:15000});localStorage.setItem('amankActive','1');localStorage.setItem('amankTrusted',trusted);}
+function stopTrip(){active=false;if(watchId!==null)navigator.geolocation.clearWatch(watchId);watchId=null;$('trip').classList.add('hidden');$('sosCard').classList.add('hidden');$('home').classList.remove('hidden');setGPSStatus('GPS غير مفعّل');localStorage.removeItem('amankActive');alert('تم إنهاء الرحلة. الحمد لله على السلامة ❤️');}
+$('startBtn').onclick=startTrip;$('arriveBtn').onclick=stopTrip;
+$('shareBtn').onclick=async()=>{const text='رحلتي مع أمانك نشطة. الشخص الموثوق: '+$('trusted').value+'\nموقعي: '+(lastPos?`https://www.google.com/maps?q=${lastPos.lat},${lastPos.lng}`:'بانتظار GPS');try{if(navigator.share)await navigator.share({title:'رحلتي مع أمانك',text});else await navigator.clipboard.writeText(text),alert('تم نسخ معلومات الرحلة.');}catch(e){}};
+$('sosBtn').onclick=()=>{if(confirm('هذه نسخة تجريبية. هل تريد إظهار تنبيه SOS؟'))alert('🚨 SOS تجريبي\nالشخص الموثوق: '+$('trusted').value+'\nآخر موقع: '+(lastPos?`${lastPos.lat}, ${lastPos.lng}`:'غير متاح')+'\n\nفي النسخة الحقيقية سيتم ربط هذا بخدمة تنبيهات آمنة.');};
+window.addEventListener('online',updateNetwork);window.addEventListener('offline',updateNetwork);updateNetwork();
+const savedTrusted=localStorage.getItem('amankTrusted');if(savedTrusted){$('trusted').value=savedTrusted;$('trustedState').textContent=savedTrusted;}
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>
