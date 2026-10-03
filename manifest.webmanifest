@@ -1,12 +1,26 @@
 {
-  "name": "أمانك — رحلة آمنة",
+  "name": "أمانك",
   "short_name": "أمانك",
-  "description": "نموذج أولي لتطبيق أمانك لمشاركة الرحلات والموقع.",
+  "description": "أمانك — وين ما تمشي… حدّ معاك.",
   "lang": "ar",
   "dir": "rtl",
   "start_url": "./",
+  "scope": "./",
   "display": "standalone",
-  "background_color": "#081a33",
-  "theme_color": "#081a33",
-  "icons": [{"src":"assets/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+  "orientation": "portrait",
+  "background_color": "#08090d",
+  "theme_color": "#08090d",
+  "categories": [
+    "safety",
+    "lifestyle",
+    "utilities"
+  ],
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
 }
